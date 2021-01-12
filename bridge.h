@@ -57,7 +57,6 @@ public:
 private:
     QTime _timer;
     int start_t = 0;
-    //std::map<QString, std::map<QString, QString> > _cont;
     QQueue<Event> _queue;
 };
 
