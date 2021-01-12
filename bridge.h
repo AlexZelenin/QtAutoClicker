@@ -1,0 +1,64 @@
+#ifndef BRIDGE_H
+#define BRIDGE_H
+
+#include <map>
+#include <vector>
+#include <string>
+#include <QTimer>
+#include <QTime>
+#include <ctime>
+#include <QQueue>
+
+class Bridge {
+    Bridge(){}
+    ~Bridge(){}
+
+    Bridge(Bridge const&) = delete;
+    Bridge operator = (Bridge const&) = delete;
+
+    struct Event {
+        QString time;
+        QString eventname;
+        int x = 0;
+        int y = 0;
+    };
+
+public:
+    static Bridge &inst() {
+        static Bridge b;
+        return b;
+    }
+
+public:
+    void startTimer() {
+        start_t = clock();
+        _timer.setHMS(0,0,0);
+    }
+
+    QString getTimer() {
+        int end = clock();
+        uint32_t ms = ((end - start_t) * 1000) / CLOCKS_PER_SEC;
+        return _timer.addMSecs(ms).toString("hh:mm:ss.zzz");
+    }
+
+    void setEvent(Event ev) {
+        _queue.enqueue(ev);
+    }
+
+    Event getStruct() {
+        Event ev;
+        return ev;
+    }
+
+    QQueue<Event> getQueue() {
+        return _queue;
+    }
+
+private:
+    QTime _timer;
+    int start_t = 0;
+    //std::map<QString, std::map<QString, QString> > _cont;
+    QQueue<Event> _queue;
+};
+
+#endif // BRIDGE_H
