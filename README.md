@@ -1,4 +1,4 @@
 # QtAutoClicker
 
-Simple Windows application for automation mouse click
+Simple Windows application for automation mouse click\n
 And automation keyboard 
