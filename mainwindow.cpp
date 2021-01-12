@@ -83,10 +83,6 @@ void MainWindow::stopRecord() {
     progress->setMaximum(q.size());
     ui->statusbar->addPermanentWidget(progress);
     ui->statusbar->showMessage("Save...");
-<<<<<<< HEAD
-=======
-    qDebug() << "QueSize: " << q.size();
->>>>>>> e3ae98e4137a1b39c4b6499c3f2ed46743841552
     QFile jfile(QDateTime::currentDateTime().toString("ddMMyyhhmmss") + ".json");
     QJsonObject obj, obj1;
     int i = 0;
@@ -127,10 +123,6 @@ void MainWindow::displayUserAction() {
 
     QJsonDocument doc;
     doc = doc.fromJson(data);
-<<<<<<< HEAD
-=======
-    qDebug() << "Size element json: " << doc.object().count();
->>>>>>> e3ae98e4137a1b39c4b6499c3f2ed46743841552
     for (int i = 0; i < doc.object().count(); i++) {
         QJsonValue val = doc.object()[QString().number(i)];
         QString tmp = tr("[ ")
@@ -159,10 +151,6 @@ void MainWindow::playUserActions() {
     QTime time;
     time.setHMS(0,0,0);
 
-<<<<<<< HEAD
-=======
-    qDebug() << "Size element json: " << doc.object().count();
->>>>>>> e3ae98e4137a1b39c4b6499c3f2ed46743841552
     QtConcurrent::run([this, doc, start, time]() mutable {
         const int threadCount = 1;
         QThreadPool::globalInstance()->setMaxThreadCount(threadCount);
