@@ -1,3 +1,3 @@
 # QtAutoClicker
 
-Simple Windows application for automation mouse and keyboard
+Simple Windows application for automatization mouse and keyboard
