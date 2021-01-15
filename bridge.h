@@ -19,6 +19,8 @@ class Bridge {
     struct Event {
         QString time;
         QString eventname;
+        unsigned int key_vnum;
+        unsigned int key_snum;
         int x = 0;
         int y = 0;
     };
@@ -54,10 +56,20 @@ public:
         return _queue;
     }
 
+    void setFileName(QString fname) {
+        filename = fname;
+    }
+
+    QString getFileName() {
+        return filename;
+    }
+
+
 private:
     QTime _timer;
     int start_t = 0;
     QQueue<Event> _queue;
+    QString filename;
 };
 
 #endif // BRIDGE_H
