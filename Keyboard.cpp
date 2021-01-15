@@ -1,9 +1,5 @@
 #include <mainwindow.h>
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-
-}
-
 LRESULT CALLBACK MainWindow::KeyProc(int nCode, WPARAM wParam, LPARAM lParam) {
     auto vcode = ((LPKBDLLHOOKSTRUCT)lParam)->vkCode;
     auto scode = ((LPKBDLLHOOKSTRUCT)lParam)->scanCode;
@@ -46,6 +42,7 @@ QString MainWindow::convertNumToChar(unsigned long vcode, unsigned long scode) {
 }
 
 QString MainWindow::parseNumToNameKey(int vcode, int scode) {
+    Q_UNUSED(scode);
     QString vkey;
     switch (vcode) {
     case KNCL::KEY_ESC:

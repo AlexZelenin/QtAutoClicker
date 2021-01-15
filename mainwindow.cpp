@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionQuit, SIGNAL(triggered()), SLOT(quitApp()));
     connect(ui->actionOpen, SIGNAL(triggered()), SLOT(open()));
+    connect(ui->actionSave_as, SIGNAL(triggered()), SLOT(saveAs()));
 
     connect(ui->record_pushButton, SIGNAL(released()), SLOT(record()));
     connect(ui->stop_pushButton, SIGNAL(released()), SLOT(stopRecord()));
@@ -34,13 +35,15 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::saveAs() {
-    QString file = QFileDialog::getSaveFileName(nullptr, "Save file", ".", "All (*.*)");
+    QString file = QFileDialog::getSaveFileName(nullptr, "Save file", ".json", "JSON (*.json*)");
     QFile f(file);
     if (!f.open(QIODevice::WriteOnly)) {
         QMessageBox::critical(nullptr, "Error", "Error open file for save");
         return;
     }
-
+    QTextStream data(&f);
+    data << Bridge::inst().getData();
+    f.close();
 }
 
 void MainWindow::open() {
@@ -123,6 +126,7 @@ void MainWindow::displayUserAction() {
     }
     ui->textBrowser->clear();
     QByteArray data = jfile.readAll();
+    Bridge::inst().setData(data);
     jfile.close();
 
     QJsonDocument doc;

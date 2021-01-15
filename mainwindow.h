@@ -39,8 +39,6 @@ public:
 signals:
     void showStatus(QString);
 public slots:
-    void keyPressEvent(QKeyEvent *event) override;
-
     // Menus
 
     void saveAs();
@@ -54,22 +52,22 @@ public slots:
     void playUserActions();
 
 private:
-    static int getInputMethod() {
-        HWND hwnd = GetForegroundWindow();
-        if (hwnd) {
-            DWORD threadID = GetWindowThreadProcessId(hwnd, NULL);
-            HKL currentLayout = GetKeyboardLayout(threadID);
-            unsigned int x = (unsigned int)currentLayout & 0x0000FFFF;
-            return x;
-        }
-        return 0;
-    }
+//    static int getInputMethod() {
+//        HWND hwnd = GetForegroundWindow();
+//        if (hwnd) {
+//            DWORD threadID = GetWindowThreadProcessId(hwnd, NULL);
+//            HKL currentLayout = GetKeyboardLayout(threadID);
+//            unsigned int x = (unsigned int)currentLayout & 0x0000FFFF;
+//            return x;
+//        }
+//        return 0;
+//    }
 
     Ui::MainWindow *ui;
 
     HHOOK hHook = NULL;
     HHOOK khHook = NULL;
     QProgressBar *progress;
-    QString open_file;
+//    QString open_file;
 };
 #endif // MAINWINDOW_H

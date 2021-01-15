@@ -64,12 +64,20 @@ public:
         return filename;
     }
 
+    void setData(QByteArray d) {
+        data = d;
+    }
+
+    QByteArray getData() {
+        return data;
+    }
 
 private:
     QTime _timer;
     int start_t = 0;
     QQueue<Event> _queue;
     QString filename;
+    QByteArray data;
 };
 
 #endif // BRIDGE_H
