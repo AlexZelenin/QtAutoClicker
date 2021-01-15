@@ -240,12 +240,6 @@ void MainWindow::playUserActions() {
             status = true;
         });
         recurs--;
-        while (true) {
-            if (!status)
-                Sleep(1);
-            else
-                break;
-        }
     }
     if (status)
         emit showStatus("Play complete");
