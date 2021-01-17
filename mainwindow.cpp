@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
+#include <QIntValidator>
 
 #pragma comment(lib, "user32.lib")
 
@@ -12,12 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
+    ui->lineEdit->setValidator(new QIntValidator(0, 10000, this));
     Bridge::inst().startTimer();
-
-    connect(this, &MainWindow::showStatus, [this](QString msg){
-        ui->statusbar->showMessage(msg);
-    });
 
     connect(ui->actionQuit, SIGNAL(triggered()), SLOT(quitApp()));
     connect(ui->actionOpen, SIGNAL(triggered()), SLOT(open()));
@@ -88,6 +85,8 @@ void MainWindow::stopRecord() {
         qDebug() << e.time << e.eventname << e.x << e.y;
         qDebug() << q.size();
         if (e.eventname == "KEYDOWN" || e.eventname == "KEYUP") {
+            obj1.remove("x");
+            obj1.remove("y");
             obj1.insert("eventname", e.eventname);
             obj1.insert("time", e.time);
             obj1.insert("vkey", QVariant().fromValue(e.key_vnum).toInt());
@@ -165,86 +164,96 @@ void MainWindow::playUserActions() {
 
     bool status = false;
     int recurs;
-    QString lncount = ui->lineEdit->text();
+    QString lncount;
+    if (ui->checkBox->isChecked()) {
+        lncount = ui->lineEdit->text();
+    }
+    else {
+        lncount = tr("1");
+    }
 
     if (lncount.isEmpty())
         recurs = 1;
     else
         recurs = lncount.toInt();
 
-    while (recurs > 0) {
+    QtConcurrent::run([this, recurs, status, doc]() mutable {
+        while (recurs > 0) {
 
-        int start = clock();
-        QTime time;
-        time.setHMS(0,0,0);
+            int start = clock();
+            QTime time;
+            time.setHMS(0,0,0);
 
-        QtConcurrent::run([doc, start, time, status]() mutable {
-            const int threadCount = 1;
-            QThreadPool::globalInstance()->setMaxThreadCount(threadCount);
-            QFutureSynchronizer<void> sync;
+            auto th = QtConcurrent::run([doc, start, time]() mutable {
+                const int threadCount = 1;
+                QThreadPool::globalInstance()->setMaxThreadCount(threadCount);
+                QFutureSynchronizer<void> sync;
 
-            for (int i = 0; i < doc.object().count() - 2; i++) {
-                QJsonValue val = doc.object()[QString().number(i)];
-                sync.addFuture(QtConcurrent::run([ val, start, time]() mutable {
-                    while(true) {
-                        int end = clock();
-                        uint32_t ms = ((end - start) * 1000) / CLOCKS_PER_SEC;
-                        QString curr_time = time.addMSecs(ms).toString("hh:mm:ss.zzz");
-                        if (curr_time != val["time"].toString())
-                            continue;
-                        else
-                            break;
-                        // Sleep(5);
-                    }
-                    auto event = val["eventname"].toString();
-                    qDebug() << event;
-                    if (event == tr("LBUTTONDOWN")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
-                    } else if (event == tr("LBUTTONUP")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
-                    } else if (event == tr("RBUTTONDOWN")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
-                    } else if (event == tr("RBUTTONUP")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
-                    } else if (event == tr("MBUTTONDOWN")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_MIDDLEDOWN, x, y, 0, 0);
-                    } else if (event == tr("MBUTTONUP")) {
-                        int x = val["x"].toInt();
-                        int y = val["y"].toInt();
-                        SetCursorPos(x, y);
-                        mouse_event(MOUSEEVENTF_MIDDLEUP, x, y, 0, 0);
-                    } else if (event == tr("KEYDOWN")) {
-                        keybd_event( val["vkey"].toInt(),
-                                val["skey"].toInt(),
-                                KEYEVENTF_EXTENDEDKEY | 0,
-                                0 );
-                    } else if (event == tr("KEYUP")) {
-                        keybd_event( val["vkey"].toInt(),
-                                val["skey"].toInt(),
-                                KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-                                0);
-                    }
-                }));
-            }
-            status = true;
-        });
-        recurs--;
-    }
-    if (status)
-        emit showStatus("Play complete");
+                for (int i = 0; i < doc.object().count() - 2; i++) {
+                    QJsonValue val = doc.object()[QString().number(i)];
+                    sync.addFuture(QtConcurrent::run([ val, start, time]() mutable {
+                        while(true) {
+                            int end = clock();
+                            uint32_t ms = ((end - start) * 1000) / CLOCKS_PER_SEC;
+                            QString curr_time = time.addMSecs(ms).toString("hh:mm:ss.zzz");
+                            if (curr_time != val["time"].toString())
+                                continue;
+                            else
+                                break;
+                            // Sleep(5);
+                        }
+                        auto event = val["eventname"].toString();
+                        qDebug() << event;
+                        if (event == tr("LBUTTONDOWN")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
+                        } else if (event == tr("LBUTTONUP")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+                        } else if (event == tr("RBUTTONDOWN")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
+                        } else if (event == tr("RBUTTONUP")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+                        } else if (event == tr("MBUTTONDOWN")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_MIDDLEDOWN, x, y, 0, 0);
+                        } else if (event == tr("MBUTTONUP")) {
+                            int x = val["x"].toInt();
+                            int y = val["y"].toInt();
+                            SetCursorPos(x, y);
+                            mouse_event(MOUSEEVENTF_MIDDLEUP, x, y, 0, 0);
+                        } else if (event == tr("KEYDOWN")) {
+                            keybd_event( val["vkey"].toInt(),
+                                    val["skey"].toInt(),
+                                    KEYEVENTF_EXTENDEDKEY | 0,
+                                    0 );
+                        } else if (event == tr("KEYUP")) {
+                            keybd_event( val["vkey"].toInt(),
+                                    val["skey"].toInt(),
+                                    KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+                                    0);
+                        }
+                    }));
+                }
+            });
+            recurs--;
+            th.waitForFinished();
+            if (recurs == 0) status = true;
+        }
+        if (status) {
+            ui->statusbar->showMessage("Play complete");
+        }
+    });
 }

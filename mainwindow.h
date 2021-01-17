@@ -37,7 +37,7 @@ public:
     QString parseNumToNameKey(int vcode, int scode);
 
 signals:
-    void showStatus(QString);
+void getProgress(int);
 public slots:
     // Menus
 
